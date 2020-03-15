@@ -1,5 +1,5 @@
 import { Observable, fromEvent, combineLatest } from "rxjs";
-import { map, startWith, tap, withLatestFrom } from "rxjs/operators";
+import { map, startWith, takeUntil, tap, withLatestFrom } from "rxjs/operators";
 
 const quality$ = getValue(fromEvent($('#quality').slider(), 'change'), 5, redrawSlider)
 const rating$ = getValue(fromEvent($('#rating').slider(), 'change'), 5, redrawSlider)
@@ -11,7 +11,9 @@ const sliderSequence$ = combineLatest([quality$, rating$, actual$])
     }))
 
 fromEvent(document.querySelector('#send-result') as HTMLButtonElement, 'click')
-    .pipe(withLatestFrom(sliderSequence$))
+    .pipe(
+        withLatestFrom(sliderSequence$),
+    )
     .subscribe(([, value]) => {
         console.log(value);
     })
