@@ -1,9 +1,2 @@
-import { swipe$ } from './swipe';
+import  './slider';
 
-swipe$.subscribe((direction) => {
-    if (direction > 0) {
-        console.log('Swipe left');
-        return;
-    }
-    console.log('Swipe right');
-});
