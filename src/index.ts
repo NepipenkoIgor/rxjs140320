@@ -1,64 +1,45 @@
-import { interval, Observable, pipe, Subscriber } from 'rxjs';
-import { TeardownLogic } from "rxjs/src/internal/types";
-import { filter } from "rxjs/operators";
+import { interval, Observable, Subscriber } from 'rxjs';
 
-function doNoThing<T>(source: Observable<T>) {
-    return source;
-}
+class SkipLimitSubscriber extends Subscriber<any> {
+    private _interval: number = 1;
+    private _count: number = 1;
 
 
-function toText<T>(source: Observable<T>) {
-    return new Observable((subscriber) => {
-        subscriber.next('RxJS is awesome')
-        subscriber.complete();
-    });
-}
+    constructor(subscriber: Subscriber<any>, private _skip: number, private _limit: number) {
+        super(subscriber);
+    }
 
-// function double(source: Observable<number>) {
-//     return new Observable((subscriber) => {
-//         source.subscribe({
-//             next(value){
-//                 subscriber.next(value * 2)
-//             }
-//         })
-//     });
-// }
-
-class DoubleSubscriber extends Subscriber<number> {
     next(value: number) {
-        super.next(value * 2);
+        const borderLeft = this._interval * (this._skip + this._limit) - this._limit;
+        const borderRight = borderLeft + this._limit;
+        if (borderLeft < this._count && this._count <= borderRight) {
+            super.next(value);
+            this._count++;
+            if (borderRight < this._count) {
+                this._interval++;
+            }
+            return;
+        }
+        this._count++;
     }
 }
 
-// function double(source1: Observable<number>) {
-//     const o$ = new Observable();
-//     o$.source = source1;
-//     o$.operator = {
-//         call(subscriber: Subscriber<number>, source: any) {
-//             source.subscribe(new DoubleSubscriber(subscriber))
-//         }
-//     }
-//     return o$;
-// }
-
-function double(source1: Observable<number>) {
-    return source1.lift({
-        call(subscriber: Subscriber<number>, source: any) {
-            source.subscribe(new DoubleSubscriber(subscriber))
-        }
-    });
+function skipLimit(skip: number, limit: number) {
+    return (source: Observable<any>) => {
+        return source.lift({
+            call(subscriber: Subscriber<any>, source: any) {
+                source.subscribe(new SkipLimitSubscriber(subscriber, skip, limit))
+            }
+        });
+    }
 }
 
-const shortChain = pipe(double, filter((v) => v % 3 === 0))
 
 interval(1000)
     .pipe(
-        // doNoThing,
-        shortChain
+        //     // doNoThing,
+        skipLimit(3, 4)
     )
     .subscribe((v) => {
         console.log(v);
-    }, () => {
-    }, () => {
-        console.log('complete')
     })
