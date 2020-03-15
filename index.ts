@@ -1,46 +1,40 @@
-interface IListener {
-    next: Function
-}
+class Observable<T> {
+    private readonly _subscriber: any;
 
-class Producer {
-    private listeners: IListener[] = [];
-
-    public subscribe(listener: IListener): { unsubscribe: () => void } {
-        const index = this.listeners.push(listener);
-        return {
-            unsubscribe: () => {
-                this.listeners.splice(index - 1, 1);
-            }
+    constructor(subscriber?: any) {
+        if (subscriber) {
+            this._subscriber = subscriber;
         }
     }
 
-    public notify(message: string) {
-        this.listeners.forEach((listener) => {
-            listener.next(message);
+    subscribe(next: (param: T) => void, error?: Function, complete?: Function) {
+        return this._subscriber({
+            next,
+            error: error || (() => {
+            }),
+            complete: complete || (() => {
+            }),
         })
     }
 }
 
-const listener1 = {
-    next: (message: string) => {
-        console.log('Listener 1 received', message);
-    }
-}
+const sequence = new Observable((subscriber: any) => {
+    let count = 1;
+    const intervalId = setInterval(() => {
+        subscriber.next(count++);
+        if (count === 10) {
+            subscriber.complete();
+            clearInterval(intervalId);
+        }
+    }, 1000)
+});
 
-
-const listener2 = {
-    next: (message: string) => {
-        console.log('Listener 2 received', message);
-    }
-}
-
-const producer = new Producer();
-const subscription1  = producer.subscribe(listener1);
-producer.subscribe(listener2);
-
-producer.notify('Hi All');
-subscription1.unsubscribe();
-
-setTimeout(()=>{
-    producer.notify('RxJS is awesome');
+setTimeout(() => {
+    sequence.subscribe((value) => {
+        console.log('Subscribe 2', value)
+    })
 }, 5000)
+
+sequence.subscribe((value) => {
+    console.log('Subscribe 1', value)
+})
