@@ -1,22 +1,66 @@
-import fs from 'fs';
-import { bindNodeCallback } from "rxjs";
-import { buffer, map } from "rxjs/operators";
+import { interval } from "rxjs";
+import { filter, map, skip, take, tap } from "rxjs/operators";
 
-// console.log(`${__dirname}/text`);
-// fs.readFile(`${__dirname}/text`, (err, buffer) => {
-//     console.log(buffer.toString())
-// })
+// const interval$ = interval(1000);
+//
+// /*
+//   sequence1$: ---0---1---2---3---4---
+//       map((x)=> x ** 2)
+//   sequence1$: ---0---1---4---9---16---
+//  */
+//
+// interval$
+//     .pipe(
+//         map((x) => x ** 2)
+//     )
+//     .subscribe((v) => {
+//         console.log(v);
+//     })
+//
+// const interval$ = interval(1000);
+//
+// /*
+//   sequence1$: ---0---1---2---3---4---
+//       tap((x)=> x ** 2)
+//               ---0---1---2---3---4---
+//       map((x)=> x ** 2)
+//   sequence1$: ---0---1---4---9---16---
+//  */
+//
+// interval$
+//     .pipe(
+//         tap((x) => x ** 2),
+//         map((x) => x ** 2)
+//     )
+//     .subscribe((v) => {
+//         console.log(v);
+//     })
 
-const readFile = bindNodeCallback(fs.readFile);
-readFile(`${__dirname}/text`)
+
+const interval$ = interval(1000);
+
+/*
+  sequence1$: ---0---1---2---3---4---
+      tap((x)=> x ** 2)
+              ---0---1---2---3---4---
+      filter((x)=> x % 2 === 0)
+              ---0-------2-------4---
+      skip(2)
+              -------------------4---
+      take(1)
+              -------------------4|
+ */
+
+interval$
     .pipe(
-        map((buffer) => {
-            const str = buffer.toString();
-            const regExp = />([^<]+)</;
-            const matches = regExp.exec(str);
-            return matches && matches[1];
-        })
+        tap((x) => x ** 2),
+        filter((x) => x % 2 === 0),
+        skip(2),
+        take(1)
     )
     .subscribe((v) => {
         console.log(v);
-    })
+    }, () => {
+    }, () => {
+        console.log('complete');
+    });
