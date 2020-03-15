@@ -1,21 +1,22 @@
-import { ajax } from "rxjs/ajax";
-import { map } from "rxjs/operators";
-import { from, fromEvent } from "rxjs";
+import fs from 'fs';
+import { bindNodeCallback } from "rxjs";
+import { buffer, map } from "rxjs/operators";
 
+// console.log(`${__dirname}/text`);
+// fs.readFile(`${__dirname}/text`, (err, buffer) => {
+//     console.log(buffer.toString())
+// })
 
-// ajax('http://learn.javascript.ru/courses/groups/api/participants?key=1ntmifu')
-//     .pipe(map((res) => res.response))
-//     .subscribe((user) => {
-//         console.log(user);
-//     })
-// from(fetch('http://learn.javascript.ru/courses/groups/api/participants?key=1ntmifu')
-//     .then((res) => res.json()))
-//     .subscribe((user) => {
-//         console.log(user);
-//     })
-
-fromEvent<MouseEvent>(document, 'mousemove')
-    .pipe(map((event) => event.clientX))
-    .subscribe((x) => {
-        console.log(x);
+const readFile = bindNodeCallback(fs.readFile);
+readFile(`${__dirname}/text`)
+    .pipe(
+        map((buffer) => {
+            const str = buffer.toString();
+            const regExp = />([^<]+)</;
+            const matches = regExp.exec(str);
+            return matches && matches[1];
+        })
+    )
+    .subscribe((v) => {
+        console.log(v);
     })
