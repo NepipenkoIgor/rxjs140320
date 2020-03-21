@@ -1,35 +1,26 @@
-import { fromEvent, Observable } from "rxjs";
-import { concatAll, concatMap, map, takeUntil } from "rxjs/operators";
+import { interval, of, zip } from "rxjs";
+import { map } from "rxjs/operators";
 
-const draggableBox = document.querySelector('.draggable') as HTMLDivElement
-const mousedown$ = fromEvent<MouseEvent>(draggableBox, 'mousedown');
-const mousemove$ = fromEvent<MouseEvent>(document, 'mousemove');
-const mouseup$ = fromEvent<MouseEvent>(draggableBox, 'mouseup');
+const sequence1$ = interval(1000);
+const sequence2$ = of('1', '2', '3', 4, '5', '6', '7');
+const sequence = zip(sequence1$, sequence2$);
 
-function drag(source1$: Observable<MouseEvent>, source2$: Observable<MouseEvent>, source3$: Observable<MouseEvent>) {
-    return source1$.pipe(
-        concatMap((downEvent) => getPosition(downEvent, source2$, source3$))
+sequence
+    .pipe(
+        map(([_x, y]: any) => {
+            return y.toUpperCase();
+            // try{
+            //
+            // } catch (err) {
+            //     console.log(err);
+            //     return  'N'
+            // }
+        })
     )
-}
-
-function getPosition(
-    event: MouseEvent,
-    source1$: Observable<MouseEvent>,
-    source2: Observable<MouseEvent>
-) {
-    return source1$.pipe(
-        map((moveEvent) => {
-            moveEvent.preventDefault();
-            return {
-                left: moveEvent.clientX - event.offsetX,
-                top: moveEvent.clientY - event.offsetY
-            }
-        }),
-        takeUntil(source2)
-    )
-}
-
-drag(mousedown$, mousemove$, mouseup$).subscribe((position) => {
-    draggableBox.style.top = `${position.top}px`;
-    draggableBox.style.left = `${position.left}px`;
-})
+    .subscribe((value) => {
+        console.log(value);
+    }, (err) => {
+        console.log(err);
+    }, () => {
+        console.log('Completed')
+    })
