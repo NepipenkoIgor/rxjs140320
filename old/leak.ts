@@ -25,6 +25,6 @@ class Products extends Unsubscriber {
 
     ngOnDestroy() {
         // some custom logic for this component
-      super.ngOnDestroy();
+        super.ngOnDestroy();
     }
 }
