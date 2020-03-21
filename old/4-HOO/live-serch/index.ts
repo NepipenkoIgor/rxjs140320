@@ -1,6 +1,6 @@
-import { fromEvent, Observable } from "rxjs";
+import { EMPTY, fromEvent, Observable } from "rxjs";
 import {
-    bufferCount,
+    bufferCount, catchError,
     concatAll,
     debounce,
     debounceTime, distinctUntilChanged,
@@ -59,6 +59,9 @@ function request(source$: Observable<AjaxResponse>) {
             reduce((resultStr, htmlStr) => {
                 return resultStr += createRow(htmlStr)
             }, ''),
+            catchError(()=>{
+                return EMPTY
+            })
         )
 }
 
