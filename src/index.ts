@@ -1,34 +1,17 @@
-import { EMPTY, interval, of, zip } from "rxjs";
-import { catchError, delay, map, retry, switchAll, switchMap, tap } from "rxjs/operators";
+// Observable + Observer = Subject
 
-const sequence1$ = interval(1000);
-const sequence2$ = of('1', '2', '3', 4, '5', '6', '7');
-const sequence = zip(sequence1$, sequence2$);
+import { BehaviorSubject, ReplaySubject, Subject } from "rxjs";
+import './component-1';
+import './component-2';
 
-sequence
-    .pipe(
-        switchMap(([_x, y]: any) => {
-            return transform(y);
-        }),
-
-    )
-    .subscribe((value) => {
-        console.log(value);
-    }, (err) => {
-        console.log('ERROR 1 =>', err);
-    }, () => {
-        console.log('Completed')
-    })
-
-
-function transform(value) {
-    return of(value).pipe(
-        map(() => {
-            return y.toUpperCase();
-        }),
-        catchError((err) => {
-            console.log(err);
-            return
-        }),
-    )
-}
+// const sequence$$ = new ReplaySubject<string>(1);
+//
+// sequence$$.next('Hi');
+// sequence$$.next('ALL');
+//
+//
+// sequence$$.subscribe((v) => {
+//     console.log(v);
+// });
+// sequence$$.next('RxJS');
+// sequence$$.next('Awesome');
